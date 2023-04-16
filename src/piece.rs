@@ -1,7 +1,8 @@
 use std::{fmt, rc::Rc};
 
+use crate::moves::diag::Diagonal;
+use crate::moves::line::Line;
 use crate::{board::Coord, moves::Move};
-
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Color {
     White,
@@ -67,6 +68,33 @@ impl Piece {
             moves: moves,
             coord,
         }
+    }
+
+    pub fn new_rook(color: Color, coord: Coord) -> Self {
+        Self::new(
+            color,
+            PieceType::Rook,
+            vec![Rc::new(Line::new(None))],
+            coord,
+        )
+    }
+
+    pub fn new_bishop(color: Color, coord: Coord) -> Self {
+        Self::new(
+            color,
+            PieceType::Bishop,
+            vec![Rc::new(Diagonal::new(None))],
+            coord,
+        )
+    }
+
+    pub fn new_queen(color: Color, coord: Coord) -> Self {
+        Self::new(
+            color,
+            PieceType::Queen,
+            vec![Rc::new(Line::new(None)), Rc::new(Diagonal::new(None))],
+            coord,
+        )
     }
 }
 

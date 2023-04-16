@@ -1,6 +1,6 @@
 use super::{parse_direction, Direction, Move};
 use crate::board::{Board, Coord, HasCoordinates};
-struct Line {
+pub struct Line {
     max_range: Option<u32>,
 }
 
