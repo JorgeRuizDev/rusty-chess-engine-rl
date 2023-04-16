@@ -96,6 +96,26 @@ impl Piece {
             coord,
         )
     }
+
+    pub fn new_king(color: Color, coord: Coord) -> Self {
+        todo!(); // Add castling & safe movement;
+        Self::new(
+            color,
+            PieceType::King,
+            vec![Rc::new(Line::new(Some(1))), Rc::new(Diagonal::new(Some(1)))],
+            coord,
+        )
+    }
+
+    pub fn new_pawn(color: Color, coord: Coord) -> Self {
+        todo!();
+        Self::new(color, PieceType::Pawn, vec![], coord)
+    }
+
+    pub fn new_knight(color: Color, coord: Coord) -> Self {
+        todo!();
+        Self::new(color, PieceType::Knight, vec![], coord)
+    }
 }
 
 #[cfg(test)]
