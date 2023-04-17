@@ -98,7 +98,7 @@ impl Piece {
     }
 
     pub fn new_king(color: Color, coord: Coord) -> Self {
-        todo!(); // Add castling & safe movement;
+        // TODO: Add Castle Move
         Self::new(
             color,
             PieceType::King,
@@ -108,12 +108,12 @@ impl Piece {
     }
 
     pub fn new_pawn(color: Color, coord: Coord) -> Self {
-        todo!();
+        // TODO: Add En Passant + Default move
         Self::new(color, PieceType::Pawn, vec![], coord)
     }
 
     pub fn new_knight(color: Color, coord: Coord) -> Self {
-        todo!();
+        // TODO: Add jump move
         Self::new(color, PieceType::Knight, vec![], coord)
     }
 }
