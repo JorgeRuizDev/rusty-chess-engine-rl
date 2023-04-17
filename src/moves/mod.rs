@@ -7,6 +7,10 @@ pub mod jump;
 pub mod line;
 pub mod prom;
 
+// Re-export the modules:
+pub use diag::Diagonal;
+pub use line::Line;
+
 pub trait Move {
     fn is_move_valid(&self, from: Coord, to: Coord, board: &Board) -> bool;
     /// Moves a piece from one cell to another
