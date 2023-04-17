@@ -6,12 +6,6 @@ use lazy_static::lazy_static;
 use regex::Regex;
 use std::collections::{HashMap, LinkedList};
 
-/// Static methods for *FEN* notation
-///
-/// The FEN String represents the board state.
-///
-/// https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
-
 #[derive(Debug, PartialEq)]
 pub enum FenError {
     InvalidFen(String),
@@ -135,6 +129,11 @@ fn parse_board_info(last_row: Vec<&str>) -> Result<BoardInfo, FenError> {
     })
 }
 
+/// Parse function for *FEN* notation
+///
+/// The FEN String represents the board state.
+///
+/// https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
 pub fn parse(fen: &str) -> Result<(LinkedList<Piece>, BoardInfo), FenError> {
     if !is_valid(fen) {
         return Err(FenError::InvalidFen(format!("Invalid FEN: {}", fen)));
@@ -151,7 +150,7 @@ pub fn parse(fen: &str) -> Result<(LinkedList<Piece>, BoardInfo), FenError> {
     // Removes the firest item from the iterator -> the last row
     rows.push(info_row.next().unwrap()); // remove everything after the whitespace
 
-    let board_info = parse_board_info(info_row.collect());
+    let board_info = parse_board_info(info_row.collect())?;
 
     // For each row
     for (row_idx, row) in rows.iter().enumerate() {
@@ -177,7 +176,7 @@ pub fn parse(fen: &str) -> Result<(LinkedList<Piece>, BoardInfo), FenError> {
         }
     }
 
-    Ok((pieces, BoardInfo::default()))
+    Ok((pieces, board_info))
 }
 mod tests {
 
