@@ -3,7 +3,7 @@ use std::{fmt, rc::Rc};
 use crate::moves::diag::Diagonal;
 use crate::moves::line::Line;
 use crate::{board::Coord, moves::Move};
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, PartialEq, Clone, Copy, Eq, Hash)]
 pub enum Color {
     White,
     Black,

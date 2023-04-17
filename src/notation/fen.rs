@@ -1,10 +1,10 @@
 use crate::{
-    board::Coord,
+    board::{BoardInfo, Coord},
     piece::{Color, Piece},
 };
 use lazy_static::lazy_static;
 use regex::Regex;
-use std::collections::LinkedList;
+use std::collections::{HashMap, LinkedList};
 
 /// Static methods for *FEN* notation
 ///
@@ -14,8 +14,9 @@ use std::collections::LinkedList;
 
 #[derive(Debug, PartialEq)]
 pub enum FenError {
-    InvalidFen,
-    InvalidPiece,
+    InvalidFen(String),
+    InvalidPiece(String),
+    InvalidGameInfo(String),
 }
 
 lazy_static! {
@@ -35,7 +36,7 @@ pub fn is_valid(fen: &str) -> bool {
 
 fn char_to_piece(c: char, row: i32, col: i32) -> Result<Piece, FenError> {
     if !c.is_alphabetic() {
-        return Err(FenError::InvalidPiece);
+        return Err(FenError::InvalidPiece(format!("Invalid piece {}", c)));
     }
 
     let color = match c.is_uppercase() {
@@ -52,15 +53,91 @@ fn char_to_piece(c: char, row: i32, col: i32) -> Result<Piece, FenError> {
         'r' => Piece::new_rook(color, coord),
         'q' => Piece::new_pawn(color, coord),
         'k' => Piece::new_king(color, coord),
-        _ => return Err(FenError::InvalidPiece),
+        _ => return Err(FenError::InvalidPiece(format!("Invalid piece {}", c))),
     };
 
     Ok(piece)
 }
+///
+fn parse_board_info(last_row: Vec<&str>) -> Result<BoardInfo, FenError> {
+    if last_row.len() != 5 {
+        return Err(FenError::InvalidGameInfo(format!(
+            "Incorrect number of game info, expected 5, got {}",
+            last_row.len()
+        )));
+    }
 
-pub fn parse(fen: &str) -> Result<LinkedList<Piece>, FenError> {
+    let turn = match last_row[0] {
+        "w" => Color::White,
+        "b" => Color::Black,
+        _ => {
+            return Err(FenError::InvalidGameInfo(format!(
+                "Invalid turn {}",
+                last_row[0]
+            )))
+        }
+    };
+    let mut castling_rights: HashMap<Color, Vec<Coord>> = HashMap::new();
+    for c in last_row[2].chars() {
+        let (color, coord) = match c {
+            'K' => (Color::White, Coord { row: 0, col: 6 }),
+            'Q' => (Color::White, Coord { row: 0, col: 2 }),
+            'k' => (Color::Black, Coord { row: 7, col: 6 }),
+            'q' => (Color::Black, Coord { row: 7, col: 2 }),
+            '-' => break,
+            _ => {
+                return Err(FenError::InvalidGameInfo(format!(
+                    "Invalid castling right {}",
+                    c
+                )))
+            }
+        };
+        castling_rights.entry(color).or_insert(vec![]).push(coord);
+    }
+
+    let en_passant = match last_row[3] {
+        "-" => None,
+        _ => {
+            // TODO: Replace with Algebraic Notation parser
+            let mut chars = last_row[3].chars();
+            let col = chars.next().unwrap() as i32 - 'a' as i32;
+            let row = chars.next().unwrap() as i32 - '1' as i32;
+            Some(Coord { row, col })
+        }
+    };
+
+    let halfmove_clock = match last_row[4].parse::<i32>() {
+        Ok(n) => n,
+        Err(_) => {
+            return Err(FenError::InvalidGameInfo(format!(
+                "Invalid halfmove clock {}",
+                last_row[4]
+            )))
+        }
+    };
+
+    let fullmove_number = match last_row[5].parse::<i32>() {
+        Ok(n) => n,
+        Err(_) => {
+            return Err(FenError::InvalidGameInfo(format!(
+                "Invalid fullmove number {}",
+                last_row[5]
+            )))
+        }
+    };
+
+    Ok(BoardInfo {
+        turn,
+        castling: castling_rights,
+        en_passant,
+        halfmove_clock,
+        fullmove_number,
+    })
+}
+
+pub fn parse(fen: &str) -> Result<(LinkedList<Piece>, BoardInfo), FenError> {
     if !is_valid(fen) {
-        return Err(FenError::InvalidFen);
+        return Err(FenError::InvalidFen(format!("Invalid FEN: {}", fen)));
     }
 
     let mut pieces = LinkedList::new();
@@ -68,13 +145,19 @@ pub fn parse(fen: &str) -> Result<LinkedList<Piece>, FenError> {
     let mut rows: Vec<&str> = fen.split("/").collect();
 
     // Get last row
-    let last_row = rows.pop().unwrap();
-    rows.push(last_row.split_whitespace().next().unwrap()); // remove everything after the whitespace
+    let info_row = rows.pop().unwrap();
+    let mut info_row = info_row.split_whitespace(); // remove everything after the whitespace
 
+    // Removes the firest item from the iterator -> the last row
+    rows.push(info_row.next().unwrap()); // remove everything after the whitespace
+
+    let board_info = parse_board_info(info_row.collect());
+
+    // For each row
     for (row_idx, row) in rows.iter().enumerate() {
         let mut col = 0;
+        // For each element in the row
         for c in row.chars() {
-            // if c is a space, break
             if c.is_digit(10) {
                 col += c.to_digit(10).unwrap() as i32;
             } else if c.is_alphabetic() {
@@ -87,11 +170,14 @@ pub fn parse(fen: &str) -> Result<LinkedList<Piece>, FenError> {
         }
 
         if col != OFFICIAL_BOARD_COLS {
-            return Err(FenError::InvalidFen);
+            return Err(FenError::InvalidFen(format!(
+                "Invalid Fen, row {} has {} columns instead of {}",
+                row_idx, col, OFFICIAL_BOARD_COLS
+            )));
         }
     }
 
-    Ok(pieces)
+    Ok((pieces, BoardInfo::default()))
 }
 mod tests {
 
@@ -123,7 +209,16 @@ mod tests {
     #[test]
     fn test_piece_builder() {
         let fen = INITIAl_BOARD;
-        let pieces = parse(&fen).unwrap();
+        let (pieces, _) = parse(&fen).unwrap();
         assert_eq!(pieces.len(), 32);
+    }
+
+    #[test]
+    fn test_map() {
+        let string = "a b c d";
+
+        let mut split = string.split_whitespace();
+        println!("{}", split.next().unwrap());
+        println!("{}", split.next().unwrap());
     }
 }

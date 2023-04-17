@@ -25,7 +25,7 @@ pub struct BoardInfo {
 }
 
 impl BoardInfo {
-    pub fn new_default() -> Self {
+    pub fn default() -> Self {
         Self {
             turn: Color::White,
             castling: HashMap::new(),
