@@ -53,12 +53,6 @@ pub struct Piece {
     pub moves: Vec<Rc<dyn Move>>,
 }
 
-impl fmt::Debug for Piece {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}{}", self.color, self.piece)
-    }
-}
-
 impl Piece {
     pub fn new(color: Color, piece: PieceType, moves: Vec<Rc<dyn Move>>, coord: Coord) -> Self {
         Self {
@@ -118,6 +112,37 @@ impl Piece {
     }
 }
 
+impl fmt::Display for Piece {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        let fmt_piece = match self.color {
+            Color::White => match self.piece {
+                PieceType::Pawn => "♙",
+                PieceType::Rook => "♖",
+                PieceType::Knight => "♘",
+                PieceType::Bishop => "♗",
+                PieceType::Queen => "♕",
+                PieceType::King => "♔",
+            },
+
+            Color::Black => match self.piece {
+                PieceType::Pawn => "♟︎",
+                PieceType::Rook => "♜",
+                PieceType::Knight => "♞",
+                PieceType::Bishop => "♝",
+                PieceType::Queen => "♛",
+                PieceType::King => "♚",
+            },
+        };
+
+        write!(f, "{}", fmt_piece)
+    }
+}
+
+impl fmt::Debug for Piece {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        write!(f, "{}", self)
+    }
+}
 #[cfg(test)]
 mod piece_tests {
     use crate::board::Coord;
