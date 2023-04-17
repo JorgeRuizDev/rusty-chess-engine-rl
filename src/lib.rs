@@ -1,8 +1,8 @@
 pub mod board;
 pub mod errors;
 pub mod moves;
+pub mod notation;
 pub mod piece;
-
 pub fn add(left: usize, right: usize) -> usize {
     left + right
 }
