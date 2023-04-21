@@ -28,8 +28,11 @@ impl AlgebraicNotation {
             ));
         }
 
+        // notation 8 -> board row 0
+        // Notation a -> board col 0
+
         let col = col.unwrap() as u32 - 'a' as u32;
-        let row = row.unwrap() as u32 - '1' as u32;
+        let row = (row.unwrap() as u32 - '1' as u32);
 
         if col >= self.cols || row >= self.rows {
             return Err(AlgebraicNotationError::InvalidCell(
@@ -38,7 +41,7 @@ impl AlgebraicNotation {
         }
 
         Ok(Coord {
-            row: row as i32,
+            row: ((row as i32) - (self.rows as i32 - 1)).abs(),
             col: col as i32,
         })
     }
@@ -53,10 +56,19 @@ mod tests {
         let algebraic_notation = AlgebraicNotation { rows: 8, cols: 8 };
         assert_eq!(
             algebraic_notation.cell_from_str("a1").unwrap(),
-            Coord { row: 0, col: 0 }
+            Coord { row: 7, col: 0 }
         );
         assert_eq!(
             algebraic_notation.cell_from_str("h8").unwrap(),
+            Coord { row: 0, col: 7 }
+        );
+
+        assert_eq!(
+            algebraic_notation.cell_from_str("a8").unwrap(),
+            Coord { row: 0, col: 0 }
+        );
+        assert_eq!(
+            algebraic_notation.cell_from_str("h1").unwrap(),
             Coord { row: 7, col: 7 }
         );
     }
@@ -92,6 +104,17 @@ mod tests {
             Err(AlgebraicNotationError::InvalidCell(
                 "Invalid cell".to_string()
             ))
+        );
+    }
+
+    #[test]
+    fn test_row_equivalence() {
+        let black_king = "e8";
+
+        let algebraic_notation = AlgebraicNotation { rows: 8, cols: 8 };
+        assert_eq!(
+            algebraic_notation.cell_from_str(black_king).unwrap(),
+            Coord { row: 0, col: 4 }
         );
     }
 }

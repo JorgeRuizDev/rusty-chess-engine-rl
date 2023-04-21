@@ -25,7 +25,7 @@ lazy_static! {
 
 const OFFICIAL_BOARD_COLS: i32 = 8;
 
-const INITIAl_BOARD: &str = r"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+pub const INITIAl_BOARD: &str = r"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 pub fn is_valid(fen: &str) -> bool {
     FEN_REGEX.is_match(fen)
@@ -248,7 +248,7 @@ mod tests {
     fn test_en_passant() {
         let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq e3 0 1";
         let (_, board_info) = parse(&fen).unwrap();
-        assert_eq!(board_info.en_passant, Some(Coord { row: 4, col: 4 }));
+        assert_eq!(board_info.en_passant, Some(Coord { row: 5, col: 4 }));
     }
 
     #[test]
@@ -266,5 +266,34 @@ mod tests {
         assert_eq!(white_rights.len(), 2);
         assert!(white_rights.contains(&Coord { row: 0, col: 2 }));
         assert!(white_rights.contains(&Coord { row: 0, col: 6 }));
+    }
+
+    #[test]
+    fn test_row_color() {
+        // Tests that row 0 is black and row 7 is black
+
+        let (pieces, board_info) = parse(INITIAl_BOARD).unwrap();
+        const color: Color = Color::White;
+
+        // White Castling
+        assert_eq!(
+            board_info
+                .castling
+                .get(&color)
+                .unwrap()
+                .iter()
+                .next()
+                .unwrap()
+                .row,
+            0
+        );
+
+        assert_eq!(
+            pieces
+                .iter()
+                .filter(|p| p.color == color && p.coord.row == 7)
+                .count(),
+            8
+        )
     }
 }
