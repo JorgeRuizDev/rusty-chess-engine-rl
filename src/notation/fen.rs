@@ -1,10 +1,13 @@
 use crate::{
     board::{BoardInfo, Coord},
+    moves::en_passant,
     piece::{Color, Piece},
 };
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::collections::{HashMap, LinkedList};
+
+use super::AlgebraicNotation;
 
 #[derive(Debug, PartialEq)]
 pub enum FenError {
@@ -52,7 +55,16 @@ fn char_to_piece(c: char, row: i32, col: i32) -> Result<Piece, FenError> {
 
     Ok(piece)
 }
+
+/// Parses the `w KQkq - 0 1` part of a Fen String
 ///
+/// The input should be the splited string with 5 elements
+/// 1. Turn
+/// 2. Castling rights
+/// 3. En passant target cell
+/// 4. Halfmove clock
+/// 5. Fullmove number
+///  
 fn parse_board_info(last_row: Vec<&str>) -> Result<BoardInfo, FenError> {
     if last_row.len() != 5 {
         return Err(FenError::InvalidGameInfo(format!(
@@ -72,7 +84,7 @@ fn parse_board_info(last_row: Vec<&str>) -> Result<BoardInfo, FenError> {
         }
     };
     let mut castling_rights: HashMap<Color, Vec<Coord>> = HashMap::new();
-    for c in last_row[2].chars() {
+    for c in last_row[1].chars() {
         let (color, coord) = match c {
             'K' => (Color::White, Coord { row: 0, col: 6 }),
             'Q' => (Color::White, Coord { row: 0, col: 2 }),
@@ -89,18 +101,22 @@ fn parse_board_info(last_row: Vec<&str>) -> Result<BoardInfo, FenError> {
         castling_rights.entry(color).or_insert(vec![]).push(coord);
     }
 
-    let en_passant = match last_row[3] {
+    let alg_parser = AlgebraicNotation { rows: 8, cols: 8 };
+
+    let en_passant = match last_row[2] {
         "-" => None,
-        _ => {
-            // TODO: Replace with Algebraic Notation parser
-            let mut chars = last_row[3].chars();
-            let col = chars.next().unwrap() as i32 - 'a' as i32;
-            let row = chars.next().unwrap() as i32 - '1' as i32;
-            Some(Coord { row, col })
-        }
+        s => match alg_parser.cell_from_str(s) {
+            Ok(coord) => Some(coord),
+            Err(_) => {
+                return Err(FenError::InvalidGameInfo(format!(
+                    "Invalid en passant {}",
+                    last_row[3]
+                )))
+            }
+        },
     };
 
-    let halfmove_clock = match last_row[4].parse::<i32>() {
+    let halfmove_clock = match last_row[3].parse::<i32>() {
         Ok(n) => n,
         Err(_) => {
             return Err(FenError::InvalidGameInfo(format!(
@@ -110,7 +126,7 @@ fn parse_board_info(last_row: Vec<&str>) -> Result<BoardInfo, FenError> {
         }
     };
 
-    let fullmove_number = match last_row[5].parse::<i32>() {
+    let fullmove_number = match last_row[4].parse::<i32>() {
         Ok(n) => n,
         Err(_) => {
             return Err(FenError::InvalidGameInfo(format!(
@@ -178,7 +194,10 @@ pub fn parse(fen: &str) -> Result<(LinkedList<Piece>, BoardInfo), FenError> {
 
     Ok((pieces, board_info))
 }
+
 mod tests {
+
+    use crate::{board::Coord, piece::Color};
 
     use super::{is_valid, parse, INITIAl_BOARD};
 
@@ -213,11 +232,39 @@ mod tests {
     }
 
     #[test]
-    fn test_map() {
-        let string = "a b c d";
+    fn test_board_info() {
+        let fen = INITIAl_BOARD;
+        let (_, board_info) = parse(&fen).unwrap();
+        assert_eq!(board_info.turn, Color::White);
+        assert_eq!(board_info.castling.len(), 2);
+        assert_eq!(board_info.castling.get(&Color::White).unwrap().len(), 2);
+        assert_eq!(board_info.castling.get(&Color::Black).unwrap().len(), 2);
+        assert_eq!(board_info.en_passant, None);
+        assert_eq!(board_info.halfmove_clock, 0);
+        assert_eq!(board_info.fullmove_number, 1);
+    }
 
-        let mut split = string.split_whitespace();
-        println!("{}", split.next().unwrap());
-        println!("{}", split.next().unwrap());
+    #[test]
+    fn test_en_passant() {
+        let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq e3 0 1";
+        let (_, board_info) = parse(&fen).unwrap();
+        assert_eq!(board_info.en_passant, Some(Coord { row: 4, col: 4 }));
+    }
+
+    #[test]
+    fn test_castling_rights() {
+        let fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        let (_, board_info) = parse(&fen).unwrap();
+
+        let black_rights = board_info.castling.get(&Color::Black).unwrap();
+        assert_eq!(black_rights.len(), 2);
+
+        assert!(black_rights.contains(&Coord { row: 7, col: 2 }));
+        assert!(black_rights.contains(&Coord { row: 7, col: 6 }));
+
+        let white_rights = board_info.castling.get(&Color::White).unwrap();
+        assert_eq!(white_rights.len(), 2);
+        assert!(white_rights.contains(&Coord { row: 0, col: 2 }));
+        assert!(white_rights.contains(&Coord { row: 0, col: 6 }));
     }
 }
