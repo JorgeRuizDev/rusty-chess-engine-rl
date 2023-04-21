@@ -10,7 +10,7 @@ pub trait HasCoordinates {
     fn get_coordinates(&self) -> Coord;
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Coord {
     pub row: i32,
     pub col: i32,

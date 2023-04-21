@@ -13,6 +13,7 @@ pub use line::Line;
 
 pub trait Move {
     fn is_move_valid(&self, from: Coord, to: Coord, board: &Board) -> bool;
+
     /// Moves a piece from one cell to another
     /// Does not check if the move is valid
     ///

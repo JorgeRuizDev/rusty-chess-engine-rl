@@ -1,10 +1,12 @@
 use crate::{moves::Direction, notation::FenError};
 
 use crate::errors::OutOfBoundsError;
+use crate::notation::fen;
+use crate::notation::fen::parse as parse_fen;
 use crate::piece::Piece;
 use std::cmp;
 
-use super::{Coord, HasCoordinates};
+use super::{BoardInfo, Coord, HasCoordinates};
 
 const ROWS: u32 = 8;
 const COLS: u32 = 8;
@@ -15,6 +17,7 @@ const COLS: u32 = 8;
 #[derive(Debug)]
 pub struct Board {
     board: Vec<Vec<Option<Piece>>>,
+    info: BoardInfo,
     n_rows: u32,
     n_cols: u32,
 }
@@ -51,7 +54,12 @@ impl Board {
             board,
             n_rows,
             n_cols,
+            info: BoardInfo::default(),
         }
+    }
+
+    pub fn default() -> Self {
+        Self::from_fen(fen::INITIAl_BOARD).unwrap()
     }
 
     pub fn in_bounds<T: HasCoordinates>(&self, coords: &T) -> bool {
@@ -104,6 +112,14 @@ impl Board {
     }
 
     pub fn from_fen(fen: &str) -> Result<Self, FenError> {
-        todo!();
+        let (pieces, info) = parse_fen(fen)?;
+
+        let mut board = Self::new(None, None);
+        for piece in pieces {
+            board.set_piece(piece);
+        }
+        board.info = info;
+
+        Ok(board)
     }
 }
