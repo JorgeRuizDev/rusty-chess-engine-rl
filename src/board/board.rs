@@ -5,6 +5,7 @@ use crate::notation::fen;
 use crate::notation::fen::parse as parse_fen;
 use crate::piece::Piece;
 use std::cmp;
+use std::fmt::format;
 
 use super::{BoardInfo, Coord, HasCoordinates};
 
@@ -121,5 +122,45 @@ impl Board {
         board.info = info;
 
         Ok(board)
+    }
+}
+
+impl std::fmt::Display for Board {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        // First Row
+
+        let mut s = String::from("");
+
+        for (i, row) in self.board.iter().enumerate() {
+            // row index
+            s.push_str(format!("{} ", (i as i32 - self.n_rows as i32).abs()).as_str());
+
+            for piece in row.iter() {
+                match piece {
+                    Some(piece) => s.push_str(&format!("{} ", piece)),
+                    None => s.push_str("· "),
+                };
+            }
+            s.push_str("\n");
+        }
+
+        s.push_str("  ");
+        for i in 0..self.n_cols {
+            s.push_str(&format!("{} ", ('a' as u8 + i as u8) as char));
+        }
+        s.push_str("\n");
+
+        write!(f, "{}", s)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_display() {
+        let board = Board::default();
+        println!("{}", board);
     }
 }
