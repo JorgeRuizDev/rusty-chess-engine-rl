@@ -47,7 +47,6 @@ impl fmt::Display for PieceType {
 pub struct Piece {
     pub color: Color,
     pub piece: PieceType,
-    pub has_moved: bool,
     // Mutable Cell reference:
     pub coord: Coord,
     pub moves: Vec<Rc<dyn Move>>,
@@ -58,7 +57,6 @@ impl Piece {
         Self {
             color,
             piece,
-            has_moved: false,
             moves: moves,
             coord,
         }

@@ -130,7 +130,6 @@ mod tests {
 
         let line: Rc<dyn Move> = Rc::new(Line::new(None));
         let rook = Piece::new(Color::White, PieceType::Rook, vec![Rc::clone(&line)], from);
-        assert!(!&rook.has_moved);
 
         board.set_piece(rook);
 
@@ -197,7 +196,6 @@ mod tests {
         line.move_piece(from, to, &mut board);
 
         assert!(board.get_piece(&from).unwrap().is_none());
-        assert!(board.get_piece(&to).unwrap().unwrap().has_moved);
         assert!(board.get_piece(&to).unwrap().unwrap().piece == PieceType::Rook);
     }
 
@@ -212,7 +210,6 @@ mod tests {
         line.move_piece(from, to, &mut board);
 
         assert!(board.get_piece(&from).unwrap().is_none());
-        assert!(board.get_piece(&to).unwrap().unwrap().has_moved);
         assert!(board.get_piece(&to).unwrap().unwrap().piece == PieceType::Rook);
     }
 
