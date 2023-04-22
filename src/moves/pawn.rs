@@ -93,7 +93,44 @@ impl Move for PawnMove {
     }
 
     fn allowed_moves(&self, from: Coord, board: &Board) -> Vec<Coord> {
-        todo!()
+        let from_piece = match board.get_piece(&from) {
+            Ok(Some(piece)) => piece,
+            _ => return vec![],
+        };
+
+        let legal_directions = match from_piece.color {
+            Color::Black => [Direction::South, Direction::SouthEast, Direction::SouthWest],
+            Color::White => [Direction::North, Direction::NorthEast, Direction::NorthWest],
+        };
+
+        let passant_cell = board.info.en_passant;
+
+        let mut moves = vec![];
+
+        for direction in legal_directions.iter() {
+            let step = direction.get_step();
+            let next_coord = from_piece.coord.clone() + step.clone();
+
+            if !board.in_bounds(&next_coord) {
+                continue;
+            }
+
+            if self.check_one_step(&next_coord, &board) {
+                moves.push(next_coord.clone());
+            }
+
+            if self.check_two_steps(&from_piece, &step, &board) {
+                moves.push(next_coord.clone() + step.clone());
+            }
+
+            if let Some(coord) = passant_cell {
+                if coord == next_coord {
+                    moves.push(next_coord.clone());
+                }
+            }
+        }
+
+        moves
     }
 }
 
@@ -107,7 +144,7 @@ mod tests {
     use super::PawnMove;
 
     #[test]
-    pub fn check_opening() {
+    pub fn test_opening() {
         let board = Board::default();
         let pawn = PawnMove::new();
 
