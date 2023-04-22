@@ -1,15 +1,15 @@
 use super::board::{Board, Coord, HasCoordinates};
-pub mod avoid_capture;
 pub mod castle;
 pub mod diag;
-pub mod en_passant;
 pub mod jump;
 pub mod line;
+pub mod pawn;
 pub mod prom;
 
 // Re-export the modules:
 pub use diag::Diagonal;
 pub use line::Line;
+pub use pawn::Pawn;
 
 pub trait Move {
     fn is_move_valid(&self, from: Coord, to: Coord, board: &Board) -> bool;
@@ -30,7 +30,6 @@ pub trait Move {
         };
 
         from_piece.coord = to;
-        from_piece.has_moved = true;
 
         board.set_piece(from_piece);
         board.remove_piece(&from)
@@ -53,14 +52,14 @@ pub enum Direction {
 impl Direction {
     pub fn get_step(&self) -> Coord {
         match self {
-            Direction::North => Coord { row: 1, col: 0 },
-            Direction::South => Coord { row: -1, col: 0 },
+            Direction::North => Coord { row: -1, col: 0 },
+            Direction::South => Coord { row: 1, col: 0 },
             Direction::East => Coord { row: 0, col: 1 },
             Direction::West => Coord { row: 0, col: -1 },
-            Direction::NorthWest => Coord { row: 1, col: -1 },
-            Direction::NorthEast => Coord { row: 1, col: 1 },
-            Direction::SouthWest => Coord { row: -1, col: -1 },
-            Direction::SouthEast => Coord { row: -1, col: 1 },
+            Direction::NorthWest => Coord { row: -1, col: -1 },
+            Direction::NorthEast => Coord { row: -1, col: 1 },
+            Direction::SouthWest => Coord { row: 1, col: -1 },
+            Direction::SouthEast => Coord { row: 1, col: 1 },
         }
     }
 }
@@ -92,25 +91,25 @@ pub fn parse_direction<T: HasCoordinates>(from: &T, to: &T) -> Result<Direction,
 
     if col_diff == 0 {
         if row_diff > 0 {
-            return Ok(Direction::North);
-        } else {
             return Ok(Direction::South);
+        } else {
+            return Ok(Direction::North);
         }
     }
 
     if row_diff == col_diff {
         if row_diff > 0 {
-            return Ok(Direction::NorthEast);
+            return Ok(Direction::SouthEast);
         } else {
-            return Ok(Direction::SouthWest);
+            return Ok(Direction::NorthWest);
         }
     }
 
     if row_diff == -col_diff {
         if row_diff > 0 {
-            return Ok(Direction::NorthWest);
+            return Ok(Direction::SouthWest);
         } else {
-            return Ok(Direction::SouthEast);
+            return Ok(Direction::NorthEast);
         }
     }
 
@@ -151,26 +150,26 @@ mod tests {
 
         let from = Coord { row: 0, col: 0 };
         let to = Coord { row: 1, col: 0 };
-        assert_eq!(parse_direction(&from, &to), Ok(Direction::North));
+        assert_eq!(parse_direction(&from, &to), Ok(Direction::South));
 
         let from = Coord { row: 1, col: 0 };
         let to = Coord { row: 0, col: 0 };
-        assert_eq!(parse_direction(&from, &to), Ok(Direction::South));
+        assert_eq!(parse_direction(&from, &to), Ok(Direction::North));
 
         let from = Coord { row: 0, col: 0 };
         let to = Coord { row: 1, col: 1 };
-        assert_eq!(parse_direction(&from, &to), Ok(Direction::NorthEast));
+        assert_eq!(parse_direction(&from, &to), Ok(Direction::SouthEast));
 
         let from = Coord { row: 1, col: 1 };
         let to = Coord { row: 0, col: 0 };
-        assert_eq!(parse_direction(&from, &to), Ok(Direction::SouthWest));
+        assert_eq!(parse_direction(&from, &to), Ok(Direction::NorthWest));
 
         let from = Coord { row: 0, col: 1 };
         let to = Coord { row: 1, col: 0 };
-        assert_eq!(parse_direction(&from, &to), Ok(Direction::NorthWest));
+        assert_eq!(parse_direction(&from, &to), Ok(Direction::SouthWest));
 
         let from = Coord { row: 1, col: 0 };
         let to = Coord { row: 0, col: 1 };
-        assert_eq!(parse_direction(&from, &to), Ok(Direction::SouthEast));
+        assert_eq!(parse_direction(&from, &to), Ok(Direction::NorthEast));
     }
 }
