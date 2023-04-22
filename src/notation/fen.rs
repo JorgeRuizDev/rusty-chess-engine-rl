@@ -1,6 +1,5 @@
 use crate::{
     board::{BoardInfo, Coord},
-    moves::en_passant,
     piece::{Color, Piece},
 };
 use lazy_static::lazy_static;
