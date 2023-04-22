@@ -1,4 +1,7 @@
-use crate::board::{Board, Coord};
+use crate::{
+    board::{Board, Coord},
+    moves::util::can_traverse,
+};
 
 use super::{parse_direction, Direction, Move};
 
@@ -34,40 +37,11 @@ impl Move for Diagonal {
 
         let mut current_coord = from;
 
-        // for each coord in the direction
-        for _ in 0..self
+        let max_range = self
             .max_range
-            .unwrap_or(board.max_cells_direction(&direction))
-        {
-            println!("Current coord: {:?}", current_coord);
-            let next_coord = current_coord.clone() + step.clone();
+            .unwrap_or(board.max_cells_direction(&direction));
 
-            // Get the next cell
-            let next_piece = match board.get_piece(&next_coord) {
-                Ok(piece) => piece,
-                Err(_) => return false, // out of bounds -> false
-            };
-
-            // if the target cell
-            if next_coord == to {
-                match board.get_piece(&next_coord) {
-                    Ok(Some(piece)) => {
-                        // if the same color -> invalid
-                        return piece.color != from_piece.color;
-                    }
-                    Ok(None) => return true, // empty cell -> valid
-                    _ => unreachable!(),     // Out of bounds -> should have been caught before
-                }
-            }
-
-            // if there is a pice in the way -> invalid
-            if !next_piece.is_none() {
-                return false;
-            }
-            current_coord = next_coord;
-        }
-
-        return false;
+        return can_traverse(board, from_piece, &to, &step, max_range);
     }
 
     fn allowed_moves(&self, from: Coord, board: &Board) -> Vec<Coord> {
