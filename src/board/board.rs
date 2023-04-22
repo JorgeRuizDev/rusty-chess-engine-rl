@@ -15,7 +15,7 @@ const COLS: u32 = 8;
 ////////////////////////////////////////////////
 // BOARD
 ////////////////////////////////////////////////
-#[derive(Debug)]
+
 pub struct Board {
     board: Vec<Vec<Option<Piece>>>,
     info: BoardInfo,
@@ -147,6 +147,33 @@ impl std::fmt::Display for Board {
         s.push_str("  ");
         for i in 0..self.n_cols {
             s.push_str(&format!("{} ", ('a' as u8 + i as u8) as char));
+        }
+        s.push_str("\n");
+
+        write!(f, "{}", s)
+    }
+}
+
+impl std::fmt::Debug for Board {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut s = String::from("");
+
+        for (i, row) in self.board.iter().enumerate() {
+            // row index
+            s.push_str(format!("{} ", i).as_str());
+
+            for piece in row.iter() {
+                match piece {
+                    Some(piece) => s.push_str(&format!("{} ", piece)),
+                    None => s.push_str("· "),
+                };
+            }
+            s.push_str("\n");
+        }
+
+        s.push_str("  ");
+        for i in 0..self.n_cols {
+            s.push_str(&format!("{} ", i));
         }
         s.push_str("\n");
 
