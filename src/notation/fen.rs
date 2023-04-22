@@ -284,7 +284,7 @@ mod tests {
                 .next()
                 .unwrap()
                 .row,
-            0
+            7
         );
 
         assert_eq!(
