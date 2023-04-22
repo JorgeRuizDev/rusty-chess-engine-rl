@@ -5,7 +5,6 @@ use crate::notation::fen;
 use crate::notation::fen::parse as parse_fen;
 use crate::piece::{Color, Piece};
 use std::cmp;
-use std::fmt::format;
 
 use super::{BoardInfo, Coord, HasCoordinates};
 
@@ -19,6 +18,7 @@ const COLS: u32 = 8;
 pub struct Board {
     board: Vec<Vec<Option<Piece>>>,
     pub info: BoardInfo,
+
     n_rows: u32,
     n_cols: u32,
 }
@@ -87,6 +87,14 @@ impl Board {
         }
 
         Ok(self.board[row as usize][col as usize].as_ref())
+    }
+
+    pub fn get_rows(&self) -> u32 {
+        self.n_rows
+    }
+
+    pub fn get_cols(&self) -> u32 {
+        self.n_cols
     }
 
     /// Returns the number of cells in the given direction

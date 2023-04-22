@@ -55,6 +55,9 @@ impl BoardInfo {
 
 #[derive(Debug, PartialEq)]
 pub struct CastlingRights {
+    /// Cell where the king will move to
     pub new_king: Coord,
+
+    /// Cell where the rook is at
     pub tower: Coord,
 }
