@@ -3,7 +3,7 @@ mod board_info;
 
 pub use board::Board;
 pub use board_info::BoardInfo;
-
+pub use board_info::CastlingRights;
 use std::ops::Add;
 
 pub trait HasCoordinates {

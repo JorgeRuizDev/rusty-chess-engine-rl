@@ -12,7 +12,7 @@ pub struct BoardInfo {
     pub turn: Color,
 
     /// Castling rights, where the king can move
-    pub castling: HashMap<Color, Vec<Coord>>,
+    pub castling: HashMap<Color, Vec<CastlingRights>>,
 
     /// En passant target square
     pub en_passant: Option<Coord>,
@@ -51,4 +51,10 @@ impl BoardInfo {
     pub fn reset_halfmove_clock(&mut self) {
         self.halfmove_clock = 0;
     }
+}
+
+#[derive(Debug, PartialEq)]
+pub struct CastlingRights {
+    pub new_king: Coord,
+    pub tower: Coord,
 }

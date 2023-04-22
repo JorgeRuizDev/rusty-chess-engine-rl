@@ -1,5 +1,5 @@
 use crate::{
-    board::{BoardInfo, Coord},
+    board::{BoardInfo, CastlingRights, Coord},
     piece::{Color, Piece},
 };
 use lazy_static::lazy_static;
@@ -82,13 +82,29 @@ fn parse_board_info(last_row: Vec<&str>) -> Result<BoardInfo, FenError> {
             )))
         }
     };
-    let mut castling_rights: HashMap<Color, Vec<Coord>> = HashMap::new();
+    let mut castling_rights = HashMap::new();
     for c in last_row[1].chars() {
-        let (color, coord) = match c {
-            'K' => (Color::White, Coord { row: 7, col: 6 }),
-            'Q' => (Color::White, Coord { row: 7, col: 2 }),
-            'k' => (Color::Black, Coord { row: 0, col: 6 }),
-            'q' => (Color::Black, Coord { row: 0, col: 2 }),
+        let (color, coord, tower) = match c {
+            'K' => (
+                Color::White,
+                Coord { row: 7, col: 6 },
+                Coord { row: 7, col: 7 },
+            ),
+            'Q' => (
+                Color::White,
+                Coord { row: 7, col: 2 },
+                Coord { row: 7, col: 0 },
+            ),
+            'k' => (
+                Color::Black,
+                Coord { row: 0, col: 6 },
+                Coord { row: 0, col: 7 },
+            ),
+            'q' => (
+                Color::Black,
+                Coord { row: 0, col: 2 },
+                Coord { row: 0, col: 0 },
+            ),
             '-' => break,
             _ => {
                 return Err(FenError::InvalidGameInfo(format!(
@@ -97,7 +113,13 @@ fn parse_board_info(last_row: Vec<&str>) -> Result<BoardInfo, FenError> {
                 )))
             }
         };
-        castling_rights.entry(color).or_insert(vec![]).push(coord);
+        castling_rights
+            .entry(color)
+            .or_insert(vec![])
+            .push(CastlingRights {
+                new_king: coord,
+                tower,
+            });
     }
 
     let alg_parser = AlgebraicNotation { rows: 8, cols: 8 };
@@ -151,7 +173,10 @@ fn parse_board_info(last_row: Vec<&str>) -> Result<BoardInfo, FenError> {
 /// https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
 pub fn parse(fen: &str) -> Result<(LinkedList<Piece>, BoardInfo), FenError> {
     if !is_valid(fen) {
-        return Err(FenError::InvalidFen(format!("Invalid FEN: {}", fen)));
+        return Err(FenError::InvalidFen(format!(
+            "Invalid FEN (Regex): {}",
+            fen
+        )));
     }
 
     let mut pieces = LinkedList::new();
@@ -196,7 +221,10 @@ pub fn parse(fen: &str) -> Result<(LinkedList<Piece>, BoardInfo), FenError> {
 
 mod tests {
 
-    use crate::{board::Coord, piece::Color};
+    use crate::{
+        board::{Coord, HasCoordinates},
+        piece::Color,
+    };
 
     use super::{is_valid, parse, INITIAL_BOARD};
 
@@ -257,14 +285,39 @@ mod tests {
 
         let black_rights = board_info.castling.get(&Color::Black).unwrap();
         assert_eq!(black_rights.len(), 2);
-        assert!(black_rights.contains(&Coord { row: 0, col: 2 }));
-        assert!(black_rights.contains(&Coord { row: 0, col: 6 }));
+        assert!(
+            black_rights
+                .iter()
+                .filter(|c| c.new_king.get_coordinates() == Coord { row: 0, col: 2 })
+                .count()
+                == 1
+        );
 
+        assert_eq!(
+            black_rights
+                .iter()
+                .filter(|c| c.new_king.get_coordinates() == Coord { row: 0, col: 6 })
+                .count(),
+            1
+        );
         let white_rights = board_info.castling.get(&Color::White).unwrap();
         assert_eq!(white_rights.len(), 2);
 
-        assert!(white_rights.contains(&Coord { row: 7, col: 2 }));
-        assert!(white_rights.contains(&Coord { row: 7, col: 6 }));
+        assert!(
+            white_rights
+                .iter()
+                .filter(|c| c.new_king.get_coordinates() == Coord { row: 7, col: 2 })
+                .count()
+                == 1
+        );
+
+        assert!(
+            white_rights
+                .iter()
+                .filter(|c| c.new_king.get_coordinates() == Coord { row: 7, col: 6 })
+                .count()
+                == 1
+        );
     }
 
     #[test]
@@ -283,6 +336,7 @@ mod tests {
                 .iter()
                 .next()
                 .unwrap()
+                .new_king
                 .row,
             7
         );
