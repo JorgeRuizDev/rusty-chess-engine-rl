@@ -85,10 +85,10 @@ fn parse_board_info(last_row: Vec<&str>) -> Result<BoardInfo, FenError> {
     let mut castling_rights: HashMap<Color, Vec<Coord>> = HashMap::new();
     for c in last_row[1].chars() {
         let (color, coord) = match c {
-            'K' => (Color::White, Coord { row: 0, col: 6 }),
-            'Q' => (Color::White, Coord { row: 0, col: 2 }),
-            'k' => (Color::Black, Coord { row: 7, col: 6 }),
-            'q' => (Color::Black, Coord { row: 7, col: 2 }),
+            'K' => (Color::White, Coord { row: 7, col: 6 }),
+            'Q' => (Color::White, Coord { row: 7, col: 2 }),
+            'k' => (Color::Black, Coord { row: 0, col: 6 }),
+            'q' => (Color::Black, Coord { row: 0, col: 2 }),
             '-' => break,
             _ => {
                 return Err(FenError::InvalidGameInfo(format!(
@@ -257,14 +257,14 @@ mod tests {
 
         let black_rights = board_info.castling.get(&Color::Black).unwrap();
         assert_eq!(black_rights.len(), 2);
-
-        assert!(black_rights.contains(&Coord { row: 7, col: 2 }));
-        assert!(black_rights.contains(&Coord { row: 7, col: 6 }));
+        assert!(black_rights.contains(&Coord { row: 0, col: 2 }));
+        assert!(black_rights.contains(&Coord { row: 0, col: 6 }));
 
         let white_rights = board_info.castling.get(&Color::White).unwrap();
         assert_eq!(white_rights.len(), 2);
-        assert!(white_rights.contains(&Coord { row: 0, col: 2 }));
-        assert!(white_rights.contains(&Coord { row: 0, col: 6 }));
+
+        assert!(white_rights.contains(&Coord { row: 7, col: 2 }));
+        assert!(white_rights.contains(&Coord { row: 7, col: 6 }));
     }
 
     #[test]
@@ -272,13 +272,13 @@ mod tests {
         // Tests that row 0 is black and row 7 is black
 
         let (pieces, board_info) = parse(INITIAL_BOARD).unwrap();
-        const color: Color = Color::White;
+        const COLOR: Color = Color::White;
 
         // White Castling
         assert_eq!(
             board_info
                 .castling
-                .get(&color)
+                .get(&COLOR)
                 .unwrap()
                 .iter()
                 .next()
@@ -290,7 +290,7 @@ mod tests {
         assert_eq!(
             pieces
                 .iter()
-                .filter(|p| p.color == color && p.coord.row == 7)
+                .filter(|p| p.color == COLOR && p.coord.row == 7)
                 .count(),
             8
         )
