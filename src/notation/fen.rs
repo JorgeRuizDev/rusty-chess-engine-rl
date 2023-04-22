@@ -24,7 +24,7 @@ lazy_static! {
 
 const OFFICIAL_BOARD_COLS: i32 = 8;
 
-pub const INITIAl_BOARD: &str = r"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+pub const INITIAL_BOARD: &str = r"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 pub fn is_valid(fen: &str) -> bool {
     FEN_REGEX.is_match(fen)
@@ -198,11 +198,11 @@ mod tests {
 
     use crate::{board::Coord, piece::Color};
 
-    use super::{is_valid, parse, INITIAl_BOARD};
+    use super::{is_valid, parse, INITIAL_BOARD};
 
     #[test]
     fn test_fen_regex() {
-        let fen = INITIAl_BOARD;
+        let fen = INITIAL_BOARD;
         assert!(is_valid(fen), "Fen is valid");
 
         // invalid fen with a space instead of a p
@@ -225,14 +225,14 @@ mod tests {
 
     #[test]
     fn test_piece_builder() {
-        let fen = INITIAl_BOARD;
+        let fen = INITIAL_BOARD;
         let (pieces, _) = parse(&fen).unwrap();
         assert_eq!(pieces.len(), 32);
     }
 
     #[test]
     fn test_board_info() {
-        let fen = INITIAl_BOARD;
+        let fen = INITIAL_BOARD;
         let (_, board_info) = parse(&fen).unwrap();
         assert_eq!(board_info.turn, Color::White);
         assert_eq!(board_info.castling.len(), 2);
@@ -271,7 +271,7 @@ mod tests {
     fn test_row_color() {
         // Tests that row 0 is black and row 7 is black
 
-        let (pieces, board_info) = parse(INITIAl_BOARD).unwrap();
+        let (pieces, board_info) = parse(INITIAL_BOARD).unwrap();
         const color: Color = Color::White;
 
         // White Castling

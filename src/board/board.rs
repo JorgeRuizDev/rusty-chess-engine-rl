@@ -45,7 +45,7 @@ impl Board {
     }
 
     pub fn default() -> Self {
-        Self::from_fen(fen::INITIAl_BOARD).unwrap()
+        Self::from_fen(fen::INITIAL_BOARD).unwrap()
     }
 
     pub fn in_bounds<T: HasCoordinates>(&self, coords: &T) -> bool {
@@ -206,16 +206,15 @@ mod test {
         println!("{}", board);
     }
 
-
     #[test]
-    fn test_pawn_row(){
+    fn test_pawn_row() {
         let board = Board::default();
         assert!(board.is_pawn_row(1, Color::Black));
         assert!(board.is_pawn_row(6, Color::White));
     }
 
     #[test]
-    fn test_prom_row(){
+    fn test_prom_row() {
         let board = Board::default();
         assert!(board.is_promotion_row(0, Color::White));
         assert!(board.is_promotion_row(7, Color::Black));

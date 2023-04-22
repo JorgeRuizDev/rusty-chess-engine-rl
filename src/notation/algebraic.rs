@@ -32,7 +32,7 @@ impl AlgebraicNotation {
         // Notation a -> board col 0
 
         let col = col.unwrap() as u32 - 'a' as u32;
-        let row = (row.unwrap() as u32 - '1' as u32);
+        let row = row.unwrap() as u32 - '1' as u32;
 
         if col >= self.cols || row >= self.rows {
             return Err(AlgebraicNotationError::InvalidCell(
