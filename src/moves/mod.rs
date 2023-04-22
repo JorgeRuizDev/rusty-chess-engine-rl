@@ -5,7 +5,7 @@ pub mod jump;
 pub mod line;
 pub mod pawn;
 pub mod prom;
-
+mod util;
 // Re-export the modules:
 pub use diag::Diagonal;
 pub use line::Line;

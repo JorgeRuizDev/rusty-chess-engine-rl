@@ -198,7 +198,7 @@ mod tests {
 
     #[test]
     fn test_possible_jumps() {
-        let (mut board, from, to) = prepare();
+        let (board, from, to) = prepare();
 
         let jump = Jump::default();
 
@@ -215,7 +215,7 @@ mod tests {
 
     #[test]
     fn test_init_white_knight() {
-        let mut board = Board::default();
+        let board = Board::default();
 
         let from = Coord { row: 0, col: 1 };
 
