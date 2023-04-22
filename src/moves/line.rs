@@ -1,4 +1,8 @@
-use super::{parse_direction, util::can_traverse, Direction, Move};
+use super::{
+    parse_direction,
+    util::{can_traverse, legal_coords_along_direction},
+    Direction, Move,
+};
 use crate::board::{Board, Coord, HasCoordinates};
 pub struct Line {
     max_range: Option<u32>,
@@ -37,7 +41,7 @@ impl Move for Line {
     }
 
     fn allowed_moves(&self, from: Coord, board: &Board) -> Vec<Coord> {
-        let current_piece = match board.get_piece(&from) {
+        let from_piece = match board.get_piece(&from) {
             Ok(Some(piece)) => piece,
             _ => return vec![],
         };
@@ -50,39 +54,17 @@ impl Move for Line {
             Direction::East,
             Direction::West,
         ] {
-            let step = match direction {
-                Direction::North | Direction::South | Direction::East | Direction::West => {
-                    direction.get_step()
-                }
-                _ => continue,
-            };
-            let mut current_coord = from.get_coordinates().clone();
-
-            // for each coord in the direction
-            for _ in 0..self
+            let max_range = self
                 .max_range
-                .unwrap_or(board.max_cells_direction(&direction))
-            {
-                let next_coord = current_coord.clone() + step.clone();
+                .unwrap_or(board.max_cells_direction(&direction));
 
-                // Get the next cell
-                let next_piece = match board.get_piece(&next_coord) {
-                    Ok(piece) => piece,
-                    Err(_) => break, // out of bounds -> false
-                };
-
-                // if the target cell
-                if next_piece.is_none() {
-                    allowed_moves.push(next_coord);
-                } else {
-                    if next_piece.unwrap().color != current_piece.color {
-                        allowed_moves.push(next_coord);
-                    }
-                    break;
-                }
-
-                current_coord = next_coord;
-            }
+            allowed_moves.append(&mut legal_coords_along_direction(
+                &from,
+                &direction,
+                &board,
+                &from_piece,
+                max_range,
+            ));
         }
         allowed_moves
     }

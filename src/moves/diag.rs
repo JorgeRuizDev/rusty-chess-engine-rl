@@ -3,7 +3,7 @@ use crate::{
     moves::util::can_traverse,
 };
 
-use super::{parse_direction, Direction, Move};
+use super::{parse_direction, util::legal_coords_along_direction, Direction, Move};
 
 pub struct Diagonal {
     max_range: Option<u32>,
@@ -58,35 +58,17 @@ impl Move for Diagonal {
             Direction::SouthEast,
             Direction::SouthWest,
         ] {
-            let step = direction.get_step();
-
-            let mut current_coord = from;
-
-            // for each coord in the direction
-            for _ in 0..self
+            let max_range = self
                 .max_range
-                .unwrap_or(board.max_cells_direction(&direction))
-            {
-                let next_coord = current_coord.clone() + step.clone();
+                .unwrap_or(board.max_cells_direction(&direction));
 
-                // Get the next cell
-                let next_piece = match board.get_piece(&next_coord) {
-                    Ok(piece) => piece,
-                    Err(_) => break, // out of bounds -> false
-                };
-
-                match next_piece {
-                    None => legal_coords.push(next_coord), // Empty cell
-                    Some(piece) => {
-                        // if the same color -> invalid
-                        if piece.color != from_piece.color {
-                            legal_coords.push(next_coord);
-                        }
-                        break; // Break -> There is a piece blocking the way (friendly & enemy)
-                    }
-                }
-                current_coord = next_coord;
-            }
+            legal_coords.append(&mut legal_coords_along_direction(
+                &from,
+                &direction,
+                &board,
+                &from_piece,
+                max_range,
+            ));
         }
 
         return legal_coords;
