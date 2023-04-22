@@ -66,7 +66,54 @@ impl Move for Line {
     }
 
     fn allowed_moves(&self, from: Coord, board: &Board) -> Vec<Coord> {
-        todo!()
+        let current_piece = match board.get_piece(&from) {
+            Ok(Some(piece)) => piece,
+            _ => return vec![],
+        };
+
+        let mut allowed_moves = vec![];
+
+        for direction in [
+            Direction::North,
+            Direction::South,
+            Direction::East,
+            Direction::West,
+        ] {
+            let step = match direction {
+                Direction::North | Direction::South | Direction::East | Direction::West => {
+                    direction.get_step()
+                }
+                _ => continue,
+            };
+            let mut current_coord = from.get_coordinates().clone();
+
+            // for each coord in the direction
+            for _ in 0..self
+                .max_range
+                .unwrap_or(board.max_cells_direction(&direction))
+            {
+                let next_coord = current_coord.clone() + step.clone();
+
+                // Get the next cell
+                let next_piece = match board.get_piece(&next_coord) {
+                    Ok(piece) => piece,
+                    Err(_) => break, // out of bounds -> false
+                };
+
+                // if the target cell
+                if next_piece.is_none() {
+                    allowed_moves.push(next_coord);
+                } else {
+                    if next_piece.unwrap().color != current_piece.color {
+                        allowed_moves.push(next_coord);
+                    }
+                    break;
+                }
+
+                current_coord = next_coord;
+            }
+        }
+        allowed_moves
     }
 }
 
@@ -152,5 +199,57 @@ mod tests {
         assert!(board.get_piece(&from).unwrap().is_none());
         assert!(board.get_piece(&to).unwrap().unwrap().has_moved);
         assert!(board.get_piece(&to).unwrap().unwrap().piece == PieceType::Rook);
+    }
+
+    #[test]
+    fn test_move_piece_capture() {
+        let (mut board, from, line) = prepare();
+        let to = Coord { row: 0, col: 1 };
+
+        let piece = Piece::new(Color::Black, PieceType::Pawn, vec![], to);
+        board.set_piece(piece);
+
+        line.move_piece(from, to, &mut board);
+
+        assert!(board.get_piece(&from).unwrap().is_none());
+        assert!(board.get_piece(&to).unwrap().unwrap().has_moved);
+        assert!(board.get_piece(&to).unwrap().unwrap().piece == PieceType::Rook);
+    }
+
+    #[test]
+    fn test_king_line_mov() {
+        let mut board = Board::default();
+        let king = Piece::new_king(Color::White, Coord { row: 3, col: 3 });
+
+        board.set_piece(king);
+
+        let line = Rc::new(Line::new(Some(1)));
+
+        let moves = line.allowed_moves(Coord { row: 3, col: 3 }, &board);
+
+        assert_eq!(moves.len(), 4);
+    }
+
+    #[test]
+    fn test_initial_rook_moves() {
+        let board = Board::default();
+
+        let line = Rc::new(Line::new(None));
+
+        let moves = line.allowed_moves(Coord { row: 0, col: 0 }, &board);
+        assert_eq!(moves.len(), 0);
+    }
+
+    #[test]
+    fn test_rook_moves() {
+        let mut board = Board::default();
+
+        let rook = Piece::new_rook(Color::White, Coord { row: 3, col: 3 });
+        board.set_piece(rook.clone());
+
+        let line = Rc::new(Line::new(None));
+        let moves = line.allowed_moves(rook.coord, &board);
+        println!("{:?}", board);
+        assert_eq!(moves.len(), 11);
     }
 }
