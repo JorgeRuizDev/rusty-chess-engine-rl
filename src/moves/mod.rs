@@ -1,10 +1,11 @@
+use crate::piece::Piece;
+
 use super::board::{Board, Coord, HasCoordinates};
 pub mod castle;
 pub mod diag;
 pub mod jump;
 pub mod line;
 pub mod pawn;
-pub mod prom;
 mod util;
 // Re-export the modules:
 pub use diag::Diagonal;
@@ -35,6 +36,10 @@ pub trait Move {
         board.remove_piece(&from)
     }
     fn allowed_moves(&self, from: Coord, board: &Board) -> Vec<Coord>;
+
+    fn can_promote(&self, piece: &Piece, prom_coord: &Coord, board: &Board) -> bool {
+        false
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]

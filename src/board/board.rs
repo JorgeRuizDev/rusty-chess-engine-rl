@@ -3,7 +3,7 @@ use crate::{moves::Direction, notation::FenError};
 use crate::errors::OutOfBoundsError;
 use crate::notation::fen;
 use crate::notation::fen::parse as parse_fen;
-use crate::piece::{Color, Piece};
+use crate::piece::{Color, Piece, PieceType};
 use std::cmp;
 
 use super::{BoardInfo, Coord, HasCoordinates};
@@ -145,6 +145,20 @@ impl Board {
         }
 
         return false;
+    }
+
+    pub fn move_piece(
+        &mut self,
+        from: &Coord,
+        to: &Coord,
+        promote: Option<Piece>,
+    ) -> Result<(), ()> {
+        let piece = match self.get_piece(from) {
+            Ok(Some(piece)) => piece,
+            _ => return Err(()),
+        };
+        // TODO
+        Err(())
     }
 }
 
