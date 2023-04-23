@@ -17,7 +17,7 @@ pub enum FenError {
 
 lazy_static! {
     static ref FEN_REGEX: Regex = Regex::new(
-        r"^((([pnbrqkPNBRQK1-8]{1,8})/?){8})\s+(b|w)\s+(-|K?Q?k?q)\s+(-|[a-h][3-6])\s+(\d+)\s+(\d+)\s*",
+        r"^((([pnbrqkPNBRQK1-8]{1,8})/?){8})\s+(b|w)\s+(-|[KQkq]{0,4})\s+(-|[a-h][3-6])\s+(\d+)\s+(\d+)\s*",
     )
     .unwrap();
 }
