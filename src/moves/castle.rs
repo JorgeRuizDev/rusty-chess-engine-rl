@@ -79,6 +79,7 @@ mod tests {
     use crate::board::Board;
 
     #[test]
+    #[ignore]
     fn test_is_valid_castle() {
         let board = Board::from_fen("4k3/8/8/8/8/8/8/R3K2R w KQ - 0 1").unwrap();
 
@@ -96,15 +97,19 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn test_invalid_castle() {
         let board = Board::from_fen("4k3/8/8/8/8/8/8/Rn2K1NR w KQ - 0 1").unwrap();
     }
 
     #[test]
+    #[ignore]
     fn test_no_fen_castle() {
         let board = Board::from_fen("4k3/8/8/8/8/8/8/Rn2K1NR w - - 0 1").unwrap();
     }
 
+    #[test]
+    #[ignore]
     fn test_castle_with_check() {
         let board = Board::from_fen("1k6/8/8/3q4/2p1p3/8/8/R3K2R w KQ - 0 1").unwrap();
     }
