@@ -114,6 +114,20 @@ impl Board {
 
         Ok(self.board[row as usize][col as usize].as_ref())
     }
+
+    pub fn get_all_pieces(&self, color: &Color) -> Vec<&Piece> {
+        let mut pieces = Vec::new();
+        for row in self.board.iter() {
+            for cell in row.iter() {
+                if let Some(piece) = cell {
+                    if &piece.color == color {
+                        pieces.push(piece);
+                    }
+                }
+            }
+        }
+        pieces
+    }
 }
 
 #[pymethods]

@@ -1,7 +1,9 @@
+use std::collections::HashSet;
 use std::{fmt, rc::Rc};
 
 use crate::moves::diag::Diagonal;
 use crate::moves::line::Line;
+use crate::Board;
 use crate::{board::Coord, moves::Move};
 use pyo3::prelude::*;
 #[derive(Debug, PartialEq, Clone, Copy, Eq, Hash)]
@@ -9,6 +11,15 @@ use pyo3::prelude::*;
 pub enum Color {
     White,
     Black,
+}
+
+impl Color {
+    pub fn opposite(&self) -> Self {
+        match self {
+            Self::White => Self::Black,
+            Self::Black => Self::White,
+        }
+    }
 }
 
 impl fmt::Display for Color {
@@ -113,6 +124,21 @@ impl Piece {
     pub fn new_knight(color: Color, coord: Coord) -> Self {
         // TODO: Add jump move
         Self::new(color, PieceType::Knight, vec![], coord)
+    }
+}
+
+impl Piece {
+    pub fn can_move(&self, coord: Coord, board: &Board) -> bool {
+        self.moves
+            .iter()
+            .any(|m| m.is_move_valid(self.coord, coord, board))
+    }
+
+    pub fn get_moves(&self, board: &Board) -> HashSet<Coord> {
+        self.moves
+            .iter()
+            .flat_map(|m| m.allowed_moves(self.coord, board))
+            .collect()
     }
 }
 
