@@ -1,12 +1,13 @@
 use crate::{moves::Direction, notation::FenError};
 
+use super::{BoardInfo, Coord, HasCoordinates};
 use crate::errors::OutOfBoundsError;
 use crate::notation::fen;
 use crate::notation::fen::parse as parse_fen;
 use crate::piece::{Color, Piece, PieceType};
+use pyo3::exceptions::PyValueError;
+use pyo3::prelude::*;
 use std::cmp;
-
-use super::{BoardInfo, Coord, HasCoordinates};
 
 const ROWS: u32 = 8;
 const COLS: u32 = 8;
@@ -15,6 +16,7 @@ const COLS: u32 = 8;
 // BOARD
 ////////////////////////////////////////////////
 
+#[pyclass]
 pub struct Board {
     board: Vec<Vec<Option<Piece>>>,
     pub info: BoardInfo,
@@ -44,11 +46,7 @@ impl Board {
         }
     }
 
-    pub fn default() -> Self {
-        Self::from_fen(fen::INITIAL_BOARD).unwrap()
-    }
-
-    pub fn in_bounds<T: HasCoordinates>(&self, coords: &T) -> bool {
+    pub fn in_bounds(&self, coords: &Coord) -> bool {
         let Coord { row, col } = coords.get_coordinates();
         row >= 0 && row < self.n_rows as i32 && col >= 0 && col < self.n_cols as i32
     }
@@ -58,14 +56,14 @@ impl Board {
         self.board[row as usize][col as usize] = Some(piece);
     }
 
-    pub fn remove_piece<T: HasCoordinates>(&mut self, coords: &T) {
+    pub fn remove_piece(&mut self, coords: &Coord) {
         let Coord { row, col } = coords.get_coordinates();
         self.board[row as usize][col as usize] = None;
     }
 
-    pub fn get_piece_mut<T: HasCoordinates>(
+    pub fn get_piece_mut(
         &mut self,
-        coords: &T,
+        coords: &Coord,
     ) -> Result<&mut Option<Piece>, OutOfBoundsError> {
         let Coord { row, col } = coords.get_coordinates();
 
@@ -74,19 +72,6 @@ impl Board {
         }
 
         Ok(&mut self.board[row as usize][col as usize])
-    }
-
-    pub fn get_piece<T: HasCoordinates>(
-        &self,
-        coords: &T,
-    ) -> Result<Option<&Piece>, OutOfBoundsError> {
-        let Coord { row, col } = coords.get_coordinates();
-
-        if !self.in_bounds(coords) {
-            return Err(OutOfBoundsError);
-        }
-
-        Ok(self.board[row as usize][col as usize].as_ref())
     }
 
     pub fn get_rows(&self) -> u32 {
@@ -120,6 +105,26 @@ impl Board {
         }
     }
 
+    pub fn get_piece(&self, coords: &Coord) -> Result<Option<&Piece>, OutOfBoundsError> {
+        let Coord { row, col } = coords.get_coordinates();
+
+        if !self.in_bounds(coords) {
+            return Err(OutOfBoundsError);
+        }
+
+        Ok(self.board[row as usize][col as usize].as_ref())
+    }
+}
+
+#[pymethods]
+impl Board {
+    #[staticmethod]
+    pub fn default() -> Self {
+        Self::from_fen(fen::INITIAL_BOARD).unwrap()
+    }
+
+    #[staticmethod]
+    #[args(fen = "fen::INITIAL_BOARD")]
     pub fn from_fen(fen: &str) -> Result<Self, FenError> {
         let (pieces, info) = parse_fen(fen)?;
 
@@ -147,18 +152,16 @@ impl Board {
         return false;
     }
 
-    pub fn move_piece(
-        &mut self,
-        from: &Coord,
-        to: &Coord,
-        promote: Option<Piece>,
-    ) -> Result<(), ()> {
+    pub fn move_piece(&mut self, from: &Coord, to: &Coord, promote: Option<Piece>) {
         let piece = match self.get_piece(from) {
             Ok(Some(piece)) => piece,
-            _ => return Err(()),
+            _ => return,
         };
         // TODO
-        Err(())
+    }
+
+    fn __str__(&self) -> String {
+        String::from(self.to_string())
     }
 }
 

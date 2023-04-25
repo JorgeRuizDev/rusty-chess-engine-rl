@@ -11,7 +11,7 @@ mod util;
 pub use diag::Diagonal;
 pub use line::Line;
 pub use pawn::PawnMove;
-
+use pyo3::prelude::*;
 pub trait Move {
     fn is_move_valid(&self, from: Coord, to: Coord, board: &Board) -> bool;
 
@@ -43,6 +43,7 @@ pub trait Move {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[pyclass]
 pub enum Direction {
     North,
     South,

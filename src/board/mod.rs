@@ -4,13 +4,14 @@ mod board_info;
 pub use board::Board;
 pub use board_info::BoardInfo;
 pub use board_info::CastlingRights;
+use pyo3::prelude::*;
 use std::ops::Add;
-
 pub trait HasCoordinates {
     fn get_coordinates(&self) -> Coord;
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[pyclass]
 pub struct Coord {
     pub row: i32,
     pub col: i32,

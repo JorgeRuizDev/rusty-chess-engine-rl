@@ -3,7 +3,9 @@ use std::{fmt, rc::Rc};
 use crate::moves::diag::Diagonal;
 use crate::moves::line::Line;
 use crate::{board::Coord, moves::Move};
+use pyo3::prelude::*;
 #[derive(Debug, PartialEq, Clone, Copy, Eq, Hash)]
+#[pyclass]
 pub enum Color {
     White,
     Black,
@@ -44,6 +46,8 @@ impl fmt::Display for PieceType {
 
 #[allow(dead_code)]
 #[derive(Clone)]
+#[pyclass]
+
 pub struct Piece {
     pub color: Color,
     pub piece: PieceType,
@@ -51,6 +55,8 @@ pub struct Piece {
     pub coord: Coord,
     pub moves: Vec<Rc<dyn Move>>,
 }
+
+unsafe impl Send for Piece {}
 
 impl Piece {
     pub fn new(color: Color, piece: PieceType, moves: Vec<Rc<dyn Move>>, coord: Coord) -> Self {

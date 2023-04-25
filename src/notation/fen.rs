@@ -3,16 +3,24 @@ use crate::{
     piece::{Color, Piece},
 };
 use lazy_static::lazy_static;
+use pyo3::{exceptions::PyValueError, PyErr};
 use regex::Regex;
 use std::collections::{HashMap, LinkedList};
 
 use super::AlgebraicNotation;
 
 #[derive(Debug, PartialEq)]
+
 pub enum FenError {
     InvalidFen(String),
     InvalidPiece(String),
     InvalidGameInfo(String),
+}
+
+impl std::convert::From<FenError> for PyErr {
+    fn from(err: FenError) -> PyErr {
+        PyValueError::new_err(format!("{:?}", err))
+    }
 }
 
 lazy_static! {

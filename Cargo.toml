@@ -7,4 +7,10 @@ edition = "2021"
 
 [dependencies]
 lazy_static = "1.4.0"
+pyo3 = "0.18.3"
 regex = "1.7.3"
+
+
+[lib]
+name = "chess_model"
+crate-type = ["cdylib"]
