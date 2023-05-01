@@ -6,7 +6,7 @@ use super::Coord;
 /// BOARD INFO
 ////////////////////////////////////////////////
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct BoardInfo {
     /// Current Turn Color
     pub turn: Color,
@@ -53,7 +53,7 @@ impl BoardInfo {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct CastlingRights {
     /// Cell where the king will move to
     pub new_king: Coord,

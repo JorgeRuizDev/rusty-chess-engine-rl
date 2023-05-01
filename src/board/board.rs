@@ -1,11 +1,11 @@
+use crate::PieceType;
 use crate::{moves::Direction, notation::FenError};
 
 use super::{BoardInfo, Coord, HasCoordinates};
 use crate::errors::OutOfBoundsError;
 use crate::notation::fen;
 use crate::notation::fen::parse as parse_fen;
-use crate::piece::{Color, Piece, PieceType};
-use pyo3::exceptions::PyValueError;
+use crate::piece::{Color, Piece};
 use pyo3::prelude::*;
 use std::cmp;
 
@@ -17,6 +17,7 @@ const COLS: u32 = 8;
 ////////////////////////////////////////////////
 
 #[pyclass]
+#[derive(Clone)]
 pub struct Board {
     board: Vec<Vec<Option<Piece>>>,
     pub info: BoardInfo,
@@ -56,9 +57,21 @@ impl Board {
         self.board[row as usize][col as usize] = Some(piece);
     }
 
-    pub fn remove_piece(&mut self, coords: &Coord) {
-        let Coord { row, col } = coords.get_coordinates();
-        self.board[row as usize][col as usize] = None;
+    pub fn remove_piece(&mut self, coord: &Coord) {
+        self.board[coord.row as usize][coord.col as usize] = None;
+    }
+
+    pub fn move_to_coord(&mut self, from: &Coord, to: &Coord) -> Option<Piece> {
+        let mut piece = self.board[from.row as usize][from.col as usize].take();
+
+        if piece.is_some() {
+            // update the piece's coordinates
+            piece.as_mut().unwrap().coord = *to;
+        }
+
+        let old_piece = self.board[to.row as usize][to.col as usize].take();
+        self.board[to.row as usize][to.col as usize] = piece;
+        return old_piece;
     }
 
     pub fn get_piece_mut(
@@ -127,6 +140,36 @@ impl Board {
             }
         }
         pieces
+    }
+
+    pub fn temporal_move<F, T>(&mut self, from: &Coord, to: &Coord, mut on_board_change: F) -> T
+    where
+        F: FnMut(&mut Board) -> T,
+    {
+        let to_piece = self.move_to_coord(from, to);
+
+        let res = on_board_change(self);
+
+        self.move_to_coord(to, from);
+
+        if to_piece.is_some() {
+            self.board[to.row as usize][to.col as usize] = to_piece;
+        }
+
+        res
+    }
+
+    pub fn get_king(&self, color: &Color) -> &Piece {
+        for row in self.board.iter() {
+            for cell in row.iter() {
+                if let Some(piece) = cell {
+                    if piece.color == *color && piece.piece == PieceType::King {
+                        return piece;
+                    }
+                }
+            }
+        }
+        unreachable!("There should be a king on the board")
     }
 }
 
