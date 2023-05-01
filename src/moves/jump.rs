@@ -19,6 +19,10 @@ impl Jump {
         }
     }
 
+    pub fn new() -> Self {
+        Self::default()
+    }
+
     fn is_jump_in_range(&self, from: &Coord, to: &Coord) -> bool {
         let n_rows = (to.row - from.row).abs() as u32;
         let n_cols = (to.col - from.col).abs() as u32;

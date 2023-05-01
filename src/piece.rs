@@ -2,7 +2,9 @@ use std::collections::HashSet;
 use std::{fmt, rc::Rc};
 
 use crate::moves::diag::Diagonal;
+use crate::moves::jump::Jump;
 use crate::moves::line::Line;
+use crate::moves::PawnMove;
 use crate::Board;
 use crate::{board::Coord, moves::Move};
 use pyo3::prelude::*;
@@ -117,13 +119,16 @@ impl Piece {
     }
 
     pub fn new_pawn(color: Color, coord: Coord) -> Self {
-        // TODO: Add En Passant + Default move
-        Self::new(color, PieceType::Pawn, vec![], coord)
+        Self::new(
+            color,
+            PieceType::Pawn,
+            vec![Rc::new(PawnMove::new())],
+            coord,
+        )
     }
 
     pub fn new_knight(color: Color, coord: Coord) -> Self {
-        // TODO: Add jump move
-        Self::new(color, PieceType::Knight, vec![], coord)
+        Self::new(color, PieceType::Knight, vec![Rc::new(Jump::new())], coord)
     }
 }
 
