@@ -10,7 +10,11 @@ impl PawnMove {
         PawnMove {}
     }
 
-    fn check_one_step(&self, to: &Coord, board: &Board) -> bool {
+    fn check_one_forward_step(&self, from: &Coord, to: &Coord, board: &Board) -> bool {
+        if to.col != from.col {
+            return false;
+        }
+
         match board.get_piece(to) {
             Ok(Some(_)) => false,
             Ok(None) => true,
@@ -18,14 +22,14 @@ impl PawnMove {
         }
     }
 
-    fn check_two_steps(&self, from_piece: &Piece, step: &Coord, board: &Board) -> bool {
+    fn check_two_forward_steps(&self, from_piece: &Piece, step: &Coord, board: &Board) -> bool {
         if !board.is_pawn_row(from_piece.coord.row, from_piece.color) {
             return false;
         }
 
         for _ in 0..2 {
             let next_coord = from_piece.coord.clone() + step.clone();
-            if !self.check_one_step(&next_coord, &board) {
+            if !self.check_one_forward_step(&from_piece.coord, &next_coord, &board) {
                 return false;
             }
         }
@@ -85,9 +89,9 @@ impl Move for PawnMove {
         }
 
         if row_dis == 1 {
-            return self.check_one_step(&to, &board);
+            return self.check_one_forward_step(&from, &to, &board);
         } else if row_dis == 2 {
-            return self.check_two_steps(&from_piece, &direction.get_step(), &board);
+            return self.check_two_forward_steps(&from_piece, &direction.get_step(), &board);
         }
         false
     }
@@ -115,12 +119,23 @@ impl Move for PawnMove {
                 continue;
             }
 
-            if self.check_one_step(&next_coord, &board) {
-                moves.push(next_coord.clone());
-            }
-
-            if self.check_two_steps(&from_piece, &step, &board) {
-                moves.push(next_coord.clone() + step.clone());
+            match direction {
+                Direction::North | Direction::South => {
+                    if self.check_one_forward_step(&from, &next_coord, &board) {
+                        moves.push(next_coord.clone());
+                    }
+                    // can walk twice
+                    if self.check_two_forward_steps(&from_piece, &step, &board) {
+                        // +1 +1
+                        moves.push(next_coord.clone() + step.clone());
+                    }
+                }
+                // NE, NW, SE, SW
+                _ => {
+                    if self.check_capture(&from_piece, &next_coord, &board) {
+                        moves.push(next_coord.clone());
+                    }
+                }
             }
 
             if let Some(coord) = passant_cell {
@@ -199,5 +214,40 @@ mod tests {
         println!("{}", board);
 
         assert!(!pawn.is_move_valid(to, from, &board)); // Go back
+    }
+
+    #[test]
+    pub fn test_pawn_can_capture() {
+        let mut board = Board::from_fen("7k/8/4K3/8/8/8/1p6/B7 w - - 0 1").unwrap();
+        let pawn = PawnMove::new();
+
+        let from = Coord { row: 6, col: 1 };
+        let to = Coord { row: 7, col: 0 };
+
+        assert!(pawn.is_move_valid(from, to, &board));
+
+        let valid_moves = pawn.allowed_moves(from, &board);
+
+        assert_eq!(valid_moves.len(), 2);
+        println!("{:?}", valid_moves);
+        assert!(valid_moves.contains(&Coord { row: 7, col: 1 })); // prom
+        assert!(valid_moves.contains(&Coord { row: 7, col: 0 })); // capture bishop
+    }
+
+    #[test]
+    pub fn test_double_step() {
+        let mut board = Board::default();
+        let pawn = PawnMove::new();
+
+        let from = Coord { row: 1, col: 0 };
+
+        let valid_moves = pawn.allowed_moves(from, &board);
+
+        assert_eq!(valid_moves.len(), 2);
+        println!("{:?}", valid_moves);
+        assert!(valid_moves.contains(&Coord { row: 2, col: 0 }));
+        assert!(valid_moves.contains(&Coord { row: 3, col: 0 }));
+        assert!(pawn.is_move_valid(from, Coord { row: 3, col: 0 }, &board));
+        assert!(pawn.is_move_valid(from, Coord { row: 2, col: 0 }, &board));
     }
 }
