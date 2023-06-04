@@ -11,7 +11,7 @@ use crate::{piece::Color, Board, Coord, Piece, PieceType};
 ///
 /// Coord: Cell that is under check
 /// Board: Board after the move
-/// Enemy pieces: All enemy pieces - same color of the piece in coord
+/// Enemy pieces: All enemy pieces - same color as the piece in coord
 /// Ally pieces: All ally pieces - opposite color as the piece in coord
 /// Returns: true if the move is check and that move does not cause an ally check
 pub fn is_check(
@@ -61,7 +61,7 @@ pub fn is_check(
 ///
 /// coord: Cell that is under check
 /// board: Board after the (enemy) move that might be check
-/// enemy_pieces: All enemy pieces - same color of the piece in coord
+/// enemy_pieces: All enemy pieces - same color as the piece in coord
 /// ally_pieces: All ally pieces - opposite color as the piece in coord
 ///
 /// Mate in 1: https://lichess.org/editor/r6k/qppppppp/8/8/8/8/PPPPPPPP/K7_b_-_-_0_1?color=white
