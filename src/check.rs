@@ -1,6 +1,4 @@
-use std::collections::HashSet;
-
-use crate::{piece::Color, Board, Coord, Piece, PieceType};
+use crate::{piece::Color, Board, Coord, Piece};
 
 /// This function checks if a move checks the king.
 ///
