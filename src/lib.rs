@@ -3,7 +3,7 @@ pub mod errors;
 pub mod moves;
 pub mod notation;
 pub mod piece;
-
+pub mod check;
 pub use board::{Board, Coord};
 pub use piece::{Piece, PieceType};
 use pyo3::prelude::*;
