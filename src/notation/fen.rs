@@ -55,7 +55,7 @@ fn char_to_piece(c: char, row: i32, col: i32) -> Result<Piece, FenError> {
         'n' => Piece::new_knight(color, coord),
         'b' => Piece::new_bishop(color, coord),
         'r' => Piece::new_rook(color, coord),
-        'q' => Piece::new_pawn(color, coord),
+        'q' => Piece::new_queen(color, coord),
         'k' => Piece::new_king(color, coord),
         _ => return Err(FenError::InvalidPiece(format!("Invalid piece {}", c))),
     };
