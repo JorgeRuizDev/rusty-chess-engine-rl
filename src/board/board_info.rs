@@ -59,5 +59,5 @@ pub struct CastlingRights {
     pub new_king: Coord,
 
     /// Cell where the rook is at
-    pub tower: Coord,
+    pub rook: Coord,
 }

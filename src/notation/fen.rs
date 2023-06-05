@@ -92,7 +92,7 @@ fn parse_board_info(last_row: Vec<&str>) -> Result<BoardInfo, FenError> {
     };
     let mut castling_rights = HashMap::new();
     for c in last_row[1].chars() {
-        let (color, coord, tower) = match c {
+        let (color, coord, rook) = match c {
             'K' => (
                 Color::White,
                 Coord { row: 7, col: 6 },
@@ -126,7 +126,7 @@ fn parse_board_info(last_row: Vec<&str>) -> Result<BoardInfo, FenError> {
             .or_insert(vec![])
             .push(CastlingRights {
                 new_king: coord,
-                tower,
+                rook,
             });
     }
 
