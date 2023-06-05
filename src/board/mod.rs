@@ -23,6 +23,15 @@ impl HasCoordinates for Coord {
     }
 }
 
+impl Coord {
+    pub fn add(&self, rhs: &Self) -> Self {
+        Self {
+            row: self.row + rhs.row,
+            col: self.col + rhs.col,
+        }
+    }
+}
+
 impl Add for Coord {
     type Output = Coord;
     fn add(self, other: Coord) -> Self::Output {

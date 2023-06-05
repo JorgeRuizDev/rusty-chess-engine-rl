@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 use std::{fmt, rc::Rc};
 
+use crate::moves::castle::Castle;
 use crate::moves::diag::Diagonal;
 use crate::moves::jump::Jump;
 use crate::moves::line::Line;
@@ -109,11 +110,14 @@ impl Piece {
     }
 
     pub fn new_king(color: Color, coord: Coord) -> Self {
-        // TODO: Add Castle Move
         Self::new(
             color,
             PieceType::King,
-            vec![Rc::new(Line::new(Some(1))), Rc::new(Diagonal::new(Some(1)))],
+            vec![
+                Rc::new(Line::new(Some(1))),
+                Rc::new(Diagonal::new(Some(1))),
+                Rc::new(Castle::new(Some(2))),
+            ],
             coord,
         )
     }
