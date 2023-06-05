@@ -126,7 +126,7 @@ fn parse_board_info(last_row: Vec<&str>) -> Result<BoardInfo, FenError> {
             .or_insert(vec![])
             .push(CastlingRights {
                 new_king: coord,
-                tower,
+                rook: tower,
             });
     }
 
