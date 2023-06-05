@@ -32,10 +32,8 @@ impl Move for Diagonal {
             },
             _ => return false,
         };
-        println!("Direction: {:?}", direction);
         let step = direction.get_step();
 
-        let mut current_coord = from;
 
         let max_range = self
             .max_range
